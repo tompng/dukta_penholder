@@ -1,2 +1,79 @@
 <meta charset=utf-8>
 <script src='svg.js'></script>
+<script>
+onload=function(){
+  svg=new SVG(200,200);
+  svg.trans={x:10,y:10,w:1,h:1};
+  svg.lineWidth=0.1;
+  var wmin=20;
+  var wmax=30;
+  var height=40;
+  var numsections=8;
+  var sections=[];
+  var N=5;
+  var wshift=10;
+  for(var i=0;i<numsections;i++){
+    sections.push(
+      [i-0.5,i+0.5].map(function(y){
+        return {x: Math.cos(y/(numsections-1)*Math.PI),y:y}
+      })
+    );
+  }
+  var sfirst=sections[0][0],slast=sections[numsections-1][0];
+  sections = sections.map(function(s){
+    return s.map(function(p){
+      return {
+        x: ((p.x-sfirst.x)/(slast.x-sfirst.x)-0.5)*(wmax-wmin)/2,
+        y: (p.y-sfirst.y)/(slast.y-sfirst.y)*height
+      }
+    });
+  })
+  sections.forEach(function(s){
+    var lines=[];
+    for(var i=0;i<=N;i++){
+      var cy=(s[0].y+s[1].y)/2
+      var line = s.map(function(p){
+        return {
+          x: (i%2?1:-1)*p.x+(wmin+wmax)/2*i+cy*wshift/height,
+          y: p.y
+        }
+      });
+      svg.line(line);
+      lines.push(line)
+    }
+    var first=(s==sections[0]),last=(s==sections[sections.length-1]);
+    if(first)svg.line([lines[0][0],lines[lines.length-1][0]]);
+    if(last)svg.line([lines[0][1],lines[lines.length-1][1]])
+    for(var i=0;i<=N;i++){
+      var xsec=lines[i][1].x+wshift/numsections/2;
+      var duktacoef=0.3;
+      var w0=lines[i-1]?(lines[i][1].x-lines[i-1][1].x)*(1-duktacoef)/2:+wshift/numsections/2;
+      var w1=lines[i+1]?(lines[i+1][1].x-lines[i][1].x)*(1-duktacoef)/2:wshift/numsections/2;
+      if(!last)svg.line([
+        {x:xsec-w0,y:lines[i][1].y},
+        {x:xsec+w1,y:lines[i][1].y}
+      ])
+      if(!first&&!last&&i){
+        var cx=(lines[i-1][1].x+lines[i][1].x)/2;
+        var cy=(lines[i][0].y+lines[i][1].y)/2;
+        var w=(lines[i][0].x+lines[i][1].x-lines[i-1][0].x-lines[i-1][1].x)/2;
+        svg.line([
+          {x:cx-w*(1-duktacoef)/2,y:cy},
+          {x:cx+w*(1-duktacoef)/2,y:cy}
+        ])
+      }
+    }
+  })
+
+
+
+
+
+
+  var img=new Image();
+  img.src=svg.toDataURL();
+  img.style.border='1px solid red'
+  document.body.appendChild(img);
+}
+
+</script>
