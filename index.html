@@ -5,10 +5,17 @@ onload=function(){
   svg=new SVG(200,200);
   svg.trans={x:10,y:10,w:1,h:1};
   svg.lineWidth=0.1;
-  var wmin=20;
-  var wmax=30;
-  var height=40;
+  var wmin=30;
+  var wmax=40;
+  var height=60;
   var numsections=8;
+  var thickness=3;
+  var duktaJoint=0.2;
+  var supportLength=1.5*thickness;
+  var supportDepth=1*thickness;
+  var cutDepth=1.5*thickness;
+  var edgeSupportDepth=1*thickness;
+
   var sections=[];
   var N=5;
   var wshift=10;
@@ -46,21 +53,70 @@ onload=function(){
     if(last)svg.line([lines[0][1],lines[lines.length-1][1]])
     for(var i=0;i<=N;i++){
       var xsec=lines[i][1].x+wshift/numsections/2;
-      var duktacoef=0.3;
-      var w0=lines[i-1]?(lines[i][1].x-lines[i-1][1].x)*(1-duktacoef)/2:+wshift/numsections/2;
-      var w1=lines[i+1]?(lines[i+1][1].x-lines[i][1].x)*(1-duktacoef)/2:wshift/numsections/2;
+      var w0=lines[i-1]?(lines[i][1].x-lines[i-1][1].x)*(1-duktaJoint)/2:+wshift/numsections/2;
+      var w1=lines[i+1]?(lines[i+1][1].x-lines[i][1].x)*(1-duktaJoint)/2:wshift/numsections/2;
+      //section dukta
       if(!last)svg.line([
         {x:xsec-w0,y:lines[i][1].y},
         {x:xsec+w1,y:lines[i][1].y}
       ])
-      if(!first&&!last&&i){
-        var cx=(lines[i-1][1].x+lines[i][1].x)/2;
+      //center dukta
+      if(!first&&!last&&i!=N){
+        var cx=(lines[i][1].x+lines[i+1][1].x)/2;
         var cy=(lines[i][0].y+lines[i][1].y)/2;
-        var w=(lines[i][0].x+lines[i][1].x-lines[i-1][0].x-lines[i-1][1].x)/2;
+        var w=(lines[i+1][0].x+lines[i+1][1].x-lines[i][0].x-lines[i][1].x)/2-(supportDepth+supportLength)*2;
         svg.line([
-          {x:cx-w*(1-duktacoef)/2,y:cy},
-          {x:cx+w*(1-duktacoef)/2,y:cy}
+          {x:cx-w*(1-duktaJoint)/2,y:cy},
+          {x:cx+w*(1-duktaJoint)/2,y:cy}
         ])
+      }
+
+      if(first||last){
+        var x=lines[i][0].x;
+        var y=(lines[i][0].y+lines[i][1].y)/2;
+        var d1=0,d2=0;
+        if(i==0||i==N){
+          d2=i?-cutDepth:cutDepth;
+        }else{
+          d1=d2=cutDepth;
+        }
+        //cut
+        svg.line([
+          {x:x-d1,y:y-thickness/2},{x:x+d2,y:y-thickness/2},
+          {x:x+d2,y:y+thickness/2},{x:x-d1,y:y+thickness/2}
+        ],d1&&d2)
+        //edgesupport
+        var rx=cutDepth+edgeSupportDepth,rw=supportLength;
+        var params=[-1,1];
+        if(i==0)params=[1];
+        if(i==N)params=[-1];
+        params.forEach(function(t){
+          svg.line([
+            {x:x+t*rx,y:y-thickness/2},{x:x+t*(rx+rw),y:y-thickness/2},
+            {x:x+t*(rx+rw),y:y+thickness/2},{x:x+t*rx,y:y+thickness/2},
+          ],true)
+        })
+      }
+      //support
+      if(!first&&!last){
+        var x=(lines[i][0].x+lines[i][1].x)/2;
+        var y=(lines[i][0].y+lines[i][1].y)/2;
+        var lx=(lines[i][1].y-lines[i][0].y)/2;
+        var ly=(lines[i][0].x-lines[i][1].x)/2;
+        var lr=Math.sqrt(lx*lx+ly*ly);
+        lx/=lr;ly/=lr;
+        var rx=supportDepth,rw=supportLength,ry=thickness/2;
+        var params=[-1,1];
+        if(i==0)params=[1];
+        if(i==N)params=[-1];
+        params.forEach(function(t){
+          svg.line([
+            {x:x+t*rx*lx-ry*ly,y:y+t*rx*ly+lx*ry},
+            {x:x+t*(rx+rw)*lx-ry*ly,y:y+t*(rx+rw)*ly+lx*ry},
+            {x:x+t*(rx+rw)*lx+ry*ly,y:y+t*(rx+rw)*ly-lx*ry},
+            {x:x+t*rx*lx+ry*ly,y:y+t*rx*ly-lx*ry},
+          ],true)
+        })
       }
     }
   })
