@@ -10,6 +10,7 @@ onload=function(){
   var height=80;
   var numsections=9;
   var thickness=3;
+  var hook=thickness*0.1;
   var duktaJoint=0.2;
   var supportLength=1.5*thickness;
   var supportDepth=1*thickness;
@@ -131,12 +132,12 @@ onload=function(){
     var t=2*Math.PI*i/N,cos=Math.cos(t),sin=Math.sin(t);
     function trans(x,y){return {x:x*cos-y*sin,y:x*sin+y*cos};}
     points.push(trans(bottomR,-wmin/2+cutDepth+edgeSupportDepth));
-    points.push(trans(bottomR+thickness,-wmin/2+cutDepth+edgeSupportDepth));
+    points.push(trans(bottomR+thickness-hook,-wmin/2+cutDepth+edgeSupportDepth));
     points.push(trans(bottomR+thickness,-wmin/2+cutDepth+edgeSupportDepth+supportLength));
     points.push(trans(bottomR,-wmin/2+cutDepth+edgeSupportDepth+supportLength));
     points.push(trans(bottomR,wmin/2-cutDepth-edgeSupportDepth-supportLength));
     points.push(trans(bottomR+thickness,wmin/2-cutDepth-edgeSupportDepth-supportLength));
-    points.push(trans(bottomR+thickness,wmin/2-cutDepth-edgeSupportDepth));
+    points.push(trans(bottomR+thickness-hook,wmin/2-cutDepth-edgeSupportDepth));
     points.push(trans(bottomR,wmin/2-cutDepth-edgeSupportDepth));
   }
   svg.line(points,true);
@@ -153,22 +154,24 @@ onload=function(){
     var dir={x:-Math.sin(2*Math.PI/N),y:Math.cos(2*Math.PI/N)};
     var ps=[
       {x:thickness,y:cutDepth+edgeSupportDepth+supportLength},
+      {x:thickness-hook,y:cutDepth+edgeSupportDepth},
+      {x:thickness,y:cutDepth+edgeSupportDepth},
       {x:thickness,y:cutDepth},
       {x:0,y:cutDepth},
       {x:0,y:cutDepth+edgeSupportDepth}
     ];
-    [0,1,2,3].forEach(function(i){
-      points.push({x:ps[i].x,y:-ps[i].y})  
+    [0,1,2,3,4,5].forEach(function(i){
+      points.push({x:ps[i].x,y:-ps[i].y});
     });
-    [3,2,1,0].forEach(function(i){
-      points.push({x:ps[i].x*dir.y+ps[i].y*dir.x,y:-ps[i].x*dir.x+ps[i].y*dir.y})  
+    [5,4,3,2,1,0].forEach(function(i){
+      points.push({x:ps[i].x*dir.y+ps[i].y*dir.x,y:-ps[i].x*dir.x+ps[i].y*dir.y});
     })
     svg.line(points);
-    k=1.25;
+    k=1.4;
     svg.curve([
       points[0],
       {x:k*cutDepth*Math.cos(Math.PI/N),y:k*cutDepth*Math.sin(Math.PI/N)},
-      points[7]
+      points[11]
     ]);
     svg.trans.x+=10;
   }
