@@ -209,9 +209,8 @@ onload=function(){
     var norm2=normalize(cross(d,{x:Math.cos(2*Math.PI/N),y:-Math.sin(2*Math.PI/N),z:0}))
     var edgesin=length(cross(norm1,norm2));
     var edgecos=Math.sqrt(1-edgesin*edgesin);
-    console.log(edgesin,edgecos,Math.sin(2*Math.PI/5))
-    var points=[];
-    if(o.outer){
+    var outerpoints=[];
+    // if(o.outer){
       var x,y;
       var coords=[
         {x:supportDepth+supportLength+thickness/2,y:-thickness},
@@ -222,23 +221,30 @@ onload=function(){
         {x:0,y:-thickness}
       ];
       coords.forEach(function(p){
-        points.push({x:p.x*edgecos-p.y*edgesin,y:p.x*edgesin+p.y*edgecos})
+        outerpoints.push({x:p.x*edgecos-p.y*edgesin,y:p.x*edgesin+p.y*edgecos})
       })
-      points.push({x:0,y:0});
+      outerpoints.push({x:0,y:0});
       coords.reverse().forEach(function(p){
-        points.push({x:-p.x,y:p.y})
+        outerpoints.push({x:-p.x,y:p.y})
       })
       svg.trans.x=90
       svg.trans.y=125
-      for(var i=0;i<2*N;i++){
-        svg.line(points)
-        var p0=points[0],p1=points[points.length-1];
-        var l=0.7;
-        svg.curve([p0,{x:-l*(p0.x+p1.x),y:-l*(p0.y+p1.y)},p1]);
-        svg.trans.x+=13;
+      function addouter(n){
+        for(var i=0;i<n;i++){
+          svg.line(outerpoints)
+          var p0=outerpoints[0],p1=outerpoints[outerpoints.length-1];
+          var l=0.7;
+          svg.curve([p0,{x:-l*(p0.x+p1.x),y:-l*(p0.y+p1.y)},p1]);
+          svg.trans.x+=13;
+        }
       }
-    }else{
+    if(o.outer){
+      addouter(2*N)
+    }
+    // }
+    if(o.inner){
       var x,y;
+      points=[];
       var coords=[
         {x:supportDepth+supportLength+thickness/2,y:0},
         {x:supportDepth+supportLength,y:0},
@@ -259,6 +265,7 @@ onload=function(){
         svg.line(points,true)
         svg.trans.x+=13;
       }
+      addouter(N)
     }
   })
 
