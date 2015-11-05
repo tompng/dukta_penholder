@@ -123,7 +123,7 @@ onload=function(){
     }
   })
 
-  
+  //bottom
   svg.trans.x=47;
   svg.trans.y=135;
   var bottomR=wmin/Math.tan(Math.PI/N)/2;
@@ -142,12 +142,15 @@ onload=function(){
   }
   svg.line(points,true);
 
+  //top
   svg.trans.x=82-points[4].x;
   svg.trans.y=101-points[4].y;
   for(var i=0;i<N;i++){
     svg.line(points.slice(4,12),true)
     svg.trans.x+=7;
   }
+
+  //cutsupport
   svg.trans.x=111;svg.trans.y=112
   for(var i=0;i<2*N;i++){
     var points=[];
@@ -160,11 +163,11 @@ onload=function(){
       {x:0,y:cutDepth},
       {x:0,y:cutDepth+edgeSupportDepth}
     ];
-    [0,1,2,3,4,5].forEach(function(i){
-      points.push({x:ps[i].x,y:-ps[i].y});
+    ps.forEach(function(p){
+      points.push({x:p.x,y:-p.y});
     });
-    [5,4,3,2,1,0].forEach(function(i){
-      points.push({x:ps[i].x*dir.y+ps[i].y*dir.x,y:-ps[i].x*dir.x+ps[i].y*dir.y});
+    ps.reverse().forEach(function(p){
+      points.push({x:p.x*dir.y+p.y*dir.x,y:-p.x*dir.x+p.y*dir.y});
     })
     svg.line(points);
     k=1.4;
@@ -175,11 +178,89 @@ onload=function(){
     ]);
     svg.trans.x+=10;
   }
-  sections.forEach(function(s){
-    // s[]
+
+  //outer and inner
+  var outer=sections[2];
+  var inner=sections[4];
+  var length=function(a){
+    return Math.sqrt(a.x*a.x+a.y*a.y+(a.z||0)*(a.z||0));
+  }
+  var cross=function(a,b){
+    return {
+      x:a.y*b.z-a.z*b.y,
+      y:a.z*b.x-a.x*b.z,
+      z:a.x*b.y-a.y*b.x
+    }
+  }
+  var normalize=function(a){
+    var r=length(a);
+    return {x:a.x/r,y:a.y/r,z:a.z/r};
+  };
+  [
+    {dx: outer[1].x-outer[0].x, dy: outer[1].y-outer[0].y, outer: true},
+    {dx: inner[1].x-inner[0].x, dy: inner[1].y-inner[0].y, inner: true}
+  ].forEach(function(o){
+    var d=normalize({x:o.dx,y:o.dy});
+    var tan=Math.tan(Math.PI/2-Math.PI/N/2);
+    var gradcos=tan*d.x/d.y;
+    var gradsin=Math.sqrt(1-gradcos*gradcos);
+    d={x:d.x,y:d.y*gradcos,z:d.y*gradsin};
+    var norm1=normalize(cross(d,{x:1,y:0,z:0}))
+    var norm2=normalize(cross(d,{x:Math.cos(2*Math.PI/N),y:-Math.sin(2*Math.PI/N),z:0}))
+    var edgesin=length(cross(norm1,norm2));
+    var edgecos=Math.sqrt(1-edgesin*edgesin);
+    console.log(edgesin,edgecos,Math.sin(2*Math.PI/5))
+    var points=[];
+    if(o.outer){
+      var x,y;
+      var coords=[
+        {x:supportDepth+supportLength+thickness/2,y:-thickness},
+        {x:supportDepth+supportLength,y:-thickness},
+        {x:supportDepth+supportLength,y:0},
+        {x:supportDepth,y:0},
+        {x:supportDepth,y:-thickness},
+        {x:0,y:-thickness}
+      ];
+      coords.forEach(function(p){
+        points.push({x:p.x*edgecos-p.y*edgesin,y:p.x*edgesin+p.y*edgecos})
+      })
+      points.push({x:0,y:0});
+      coords.reverse().forEach(function(p){
+        points.push({x:-p.x,y:p.y})
+      })
+      svg.trans.x=90
+      svg.trans.y=125
+      for(var i=0;i<2*N;i++){
+        svg.line(points)
+        var p0=points[0],p1=points[points.length-1];
+        var l=0.7;
+        svg.curve([p0,{x:-l*(p0.x+p1.x),y:-l*(p0.y+p1.y)},p1]);
+        svg.trans.x+=13;
+      }
+    }else{
+      var x,y;
+      var coords=[
+        {x:supportDepth+supportLength+thickness/2,y:0},
+        {x:supportDepth+supportLength,y:0},
+        {x:supportDepth+supportLength,y:-thickness},
+        {x:supportDepth,y:-thickness},
+        {x:supportDepth,y:0}
+      ]
+      coords.forEach(function(p){
+        points.push({x:p.x*edgecos-p.y*edgesin,y:p.x*edgesin+p.y*edgecos})
+      })
+      points.push({x:0,y:0});
+      coords.reverse().forEach(function(p){
+        points.push({x:-p.x,y:p.y})
+      })
+      svg.trans.x=90
+      svg.trans.y=140
+      for(var i=0;i<N;i++){
+        svg.line(points,true)
+        svg.trans.x+=13;
+      }
+    }
   })
-
-
 
   var img=new Image();
   img.src=svg.toDataURL();
