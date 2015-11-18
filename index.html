@@ -7,9 +7,10 @@ onload=function(){
   var lw=svg.lineWidth=0.1;
   var wmin=40;
   var wmax=50;
-  var height=80;
+  var height=100;
   var numsections=9;
-  var thickness=3;
+  var yoffset=22;
+  var thickness=2.7;
   var hook=thickness*0.1;
   var duktaJoint=0.2;
   var supportLength=1.5*thickness;
@@ -125,7 +126,7 @@ onload=function(){
 
   //bottom
   svg.trans.x=47;
-  svg.trans.y=135;
+  svg.trans.y=135+yoffset;
   var bottomR=wmin/Math.tan(Math.PI/N)/2;
   var points=[];
   for(var i=0;i<N;i++){
@@ -144,14 +145,14 @@ onload=function(){
 
   //top
   svg.trans.x=82-points[4].x;
-  svg.trans.y=101-points[4].y;
+  svg.trans.y=101-points[4].y+yoffset;
   for(var i=0;i<N;i++){
     svg.line(points.slice(4,12),true)
     svg.trans.x+=7;
   }
 
   //cutsupport
-  svg.trans.x=111;svg.trans.y=112
+  svg.trans.x=111;svg.trans.y=112+yoffset
   for(var i=0;i<2*N;i++){
     var points=[];
     var dir={x:-Math.sin(2*Math.PI/N),y:Math.cos(2*Math.PI/N)};
@@ -228,7 +229,7 @@ onload=function(){
         outerpoints.push({x:-p.x,y:p.y})
       })
       svg.trans.x=90
-      svg.trans.y=125
+      svg.trans.y=125+yoffset
       function addouter(n){
         for(var i=0;i<n;i++){
           svg.line(outerpoints)
@@ -260,7 +261,7 @@ onload=function(){
         points.push({x:-p.x,y:p.y})
       })
       svg.trans.x=90
-      svg.trans.y=140
+      svg.trans.y=140+yoffset
       for(var i=0;i<N;i++){
         svg.line(points,true)
         svg.trans.x+=13;
