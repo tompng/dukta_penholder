@@ -4,7 +4,7 @@
 onload=function(){
   svg=new SVG(300,300);
   svg.trans={x:10,y:10,w:1,h:1};
-  svg.lineWidth=0.1;
+  var lw=svg.lineWidth=0.1;
   var wmin=40;
   var wmax=50;
   var height=80;
@@ -84,8 +84,8 @@ onload=function(){
         }
         //cut
         svg.line([
-          {x:x-d1,y:y-thickness/2},{x:x+d2,y:y-thickness/2},
-          {x:x+d2,y:y+thickness/2},{x:x-d1,y:y+thickness/2}
+          {x:x-d1+(d1?lw:0),y:y-thickness/2+lw/2},{x:x+d2-lw,y:y-thickness/2+lw/2},
+          {x:x+d2-lw,y:y+thickness/2-lw/2},{x:x-d1+(d1?lw:0),y:y+thickness/2-lw/2}
         ],d1&&d2)
         //edgesupport
         var rx=cutDepth+edgeSupportDepth,rw=supportLength;
@@ -94,8 +94,8 @@ onload=function(){
         if(i==N)params=[-1];
         params.forEach(function(t){
           svg.line([
-            {x:x+t*rx,y:y-thickness/2},{x:x+t*(rx+rw),y:y-thickness/2},
-            {x:x+t*(rx+rw),y:y+thickness/2},{x:x+t*rx,y:y+thickness/2},
+            {x:x+t*(rx+lw),y:y-thickness/2+lw/2},{x:x+t*(rx+rw-lw),y:y-thickness/2+lw/2},
+            {x:x+t*(rx+rw-lw),y:y+thickness/2-lw/2},{x:x+t*(rx+lw),y:y+thickness/2-lw/2},
           ],true)
         })
       }
@@ -113,10 +113,10 @@ onload=function(){
         if(i==N)params=[-1];
         params.forEach(function(t){
           svg.line([
-            {x:x+t*rx*lx-ry*ly,y:y+t*rx*ly+lx*ry},
-            {x:x+t*(rx+rw)*lx-ry*ly,y:y+t*(rx+rw)*ly+lx*ry},
-            {x:x+t*(rx+rw)*lx+ry*ly,y:y+t*(rx+rw)*ly-lx*ry},
-            {x:x+t*rx*lx+ry*ly,y:y+t*rx*ly-lx*ry},
+            {x:x+t*(rx+lw)*lx-(ry-lw/2)*ly,y:y+t*(rx+lw)*ly+lx*(ry-lw/2)},
+            {x:x+t*(rx+rw-lw)*lx-(ry-lw/2)*ly,y:y+t*(rx+rw-lw)*ly+lx*(ry-lw/2)},
+            {x:x+t*(rx+rw-lw)*lx+(ry-lw/2)*ly,y:y+t*(rx+rw-lw)*ly-lx*(ry-lw/2)},
+            {x:x+t*(rx+lw)*lx+(ry-lw/2)*ly,y:y+t*(rx+lw)*ly-lx*(ry-lw/2)},
           ],true)
         })
       }
@@ -156,10 +156,10 @@ onload=function(){
     var points=[];
     var dir={x:-Math.sin(2*Math.PI/N),y:Math.cos(2*Math.PI/N)};
     var ps=[
-      {x:thickness,y:cutDepth+edgeSupportDepth+supportLength},
-      {x:thickness-hook,y:cutDepth+edgeSupportDepth},
-      {x:thickness,y:cutDepth+edgeSupportDepth},
-      {x:thickness,y:cutDepth},
+      {x:thickness-lw,y:cutDepth+edgeSupportDepth+supportLength},
+      {x:thickness-lw-hook,y:cutDepth+edgeSupportDepth},
+      {x:thickness-lw,y:cutDepth+edgeSupportDepth},
+      {x:thickness-lw,y:cutDepth},
       {x:0,y:cutDepth},
       {x:0,y:cutDepth+edgeSupportDepth}
     ];
